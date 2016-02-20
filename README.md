@@ -1,36 +1,76 @@
-denon-remote
+denon-remote (web application)
 ============
 
-Send/get commands from a Denon AV receiver over a network connection. Tested for my Denon AVR X1000.
+Built largely off jtangelder's contribution @ https://github.com/jtangelder/denon-remote.git
+
+Send/get commands from a Denon AV receiver over a network connection via webPage.
 In the file protocol.pdf you can find all the commands and responses from the device. 
 
-Install [Node](http://nodejs.org) with Coffeescript (`npm install coffee-script -g`), and execute `npm install`.
+Install [Node](http://nodejs.org) and install websocket (npm install websocket)
 
-Run `coffee cli 192.168.1.20` to connect to the receiver. You can enter commands to send to the receiver, and read it's output.
-A command could be `volume` to get the current level, or `power on` to turn the device on. The commands are the methods in commands.coffee.
-You can also send the protocol commands listed in protocol.pdf, to get the volume you can send this `mv ?` 
+Start server process with terminal/node. 
+In the containing directory on node enter:
+"node denonMid.js"
 
-Run `coffee server.coffee` for a simple webserver on `localhost:8000`, showing you the live status of the device. 
-You may have to change the IP address of the device in the code.
+After this point you can locally launch the webpage and send commands to the receiver. 
+(webpage>clientSide.js>denonMid.js>denon.js>Denon AV)
+
 
 ## How it works
-You can control the receiver with a telnet connection, on port 23. 
-The receiver needs to be on the network and the network remote option has to be on.
+The WebApp directs user input to a server instance that is running on the same network as the Denon. The server then sends telnet commands to the receiver. 
+
+Built in samples include source, power, and volume. All commands (if syntaxed according protocol.pdf) can be sent via the text box near the bottom of the page.
 
 ## Code sample
-````coffee
-connection = new (require './lib/connection')
-command = new (require './lib/commands')(connection)
+var command, connection;
+connection = new (require('./lib/connection.js'));
+command = new (require('./lib/commands.js'))(connection);
 
-connection.connect '192.168.1.20', 23, ->
-  console.log 'connected to the receiver'
-  
-  # turn it on!
-  command.power true
-  
-  # change volume
-  command.volume 30
-	
-connection.response (cmd, value)->
-  console.log cmd, value
-````
+
+
+
+//Setup websocket connection with browser
+var ws = require("nodejs-websocket")
+var server = ws.createServer(function (conn) {
+
+    console.log("New connection")
+    conn.on("text", function (str) {
+
+      var res = str.split(" ");
+
+
+
+            var denon = require('./denon.js');
+            switch(res[0]){
+                case "MU?":
+                  denon.mu(res, connection, command, conn);
+                break;
+                case "PW?":
+                  denon.pw(res, connection, command, conn);
+                break;
+                case "Z2MU?":
+                  denon.z2mu(res, connection, command, conn);
+                break;
+                case "Z2?":
+                  denon.z2pw(res, connection, command, conn);
+                break;
+                case "Closer":
+                  denon.closer(connection, command);
+                  //denon.closer();
+                break;
+                case "Vol":
+                  denon.passVolume(res, connection, command, conn);
+                break;
+                case "source":
+                  denon.passInput(res, connection, command, conn);
+                break;
+                default:
+                 conn.sendText("Unable to determine command type @denonMid.js");
+                 console.log("Unable to determine command type @denonMid.js");
+                }
+
+        //Tester
+        console.log("Received "+str)
+
+
+    })
