@@ -21,56 +21,11 @@ The WebApp directs user input to a server instance that is running on the same n
 
 Built in samples include source, power, and volume. All commands (if syntaxed according protocol.pdf) can be sent via the text box near the bottom of the page.
 
-## Code sample
-var command, connection;
-connection = new (require('./lib/connection.js'));
-command = new (require('./lib/commands.js'))(connection);
+##Recomended changes
+Currently the webPage is pointing to localhost for the websocket connection. Assuming you would like access the web interface from another device you need to move you html and clientSide.js to host directory (Ex /var/www...) and change the IP address to you hosting devices IP 
 
+"var connection = new WebSocket('ws://localhost:7001');"  to "var connection = new WebSocket('ws://192.168.0.2:7001');"
+Obviously, a static IP for the host ideal.
 
+Additionally, the Denon IP is assumed to be "192.168.0.31" this may need to be changed in your implemenation. I'm working on a prompt that asks for the Denon's IP and assigns when a command is passed. 
 
-
-//Setup websocket connection with browser
-var ws = require("nodejs-websocket")
-var server = ws.createServer(function (conn) {
-
-    console.log("New connection")
-    conn.on("text", function (str) {
-
-      var res = str.split(" ");
-
-
-
-            var denon = require('./denon.js');
-            switch(res[0]){
-                case "MU?":
-                  denon.mu(res, connection, command, conn);
-                break;
-                case "PW?":
-                  denon.pw(res, connection, command, conn);
-                break;
-                case "Z2MU?":
-                  denon.z2mu(res, connection, command, conn);
-                break;
-                case "Z2?":
-                  denon.z2pw(res, connection, command, conn);
-                break;
-                case "Closer":
-                  denon.closer(connection, command);
-                  //denon.closer();
-                break;
-                case "Vol":
-                  denon.passVolume(res, connection, command, conn);
-                break;
-                case "source":
-                  denon.passInput(res, connection, command, conn);
-                break;
-                default:
-                 conn.sendText("Unable to determine command type @denonMid.js");
-                 console.log("Unable to determine command type @denonMid.js");
-                }
-
-        //Tester
-        console.log("Received "+str)
-
-
-    })
