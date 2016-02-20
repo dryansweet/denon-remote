@@ -1,0 +1,157 @@
+<!--
+    HTML5 written by Ryan Sweet
+    Provides a webbased GUI to control a
+    Denon receiver
+ -->
+<html>
+<head>
+<Title>Denon Remote</title>
+<script>
+var inter;
+var zinter;
+var connection = new WebSocket('ws://localhost:7001');
+connection.onmessage = function (event) {
+
+  var mes = event.data;
+  //Testing
+  //document.getElementById('result').value=mes;
+  mes = mes.split(" ");
+  if(mes[0]== 'volume')
+    document.getElementById('vol').value=mes[1];
+
+  if(mes[0]=='zone2')
+    document.getElementById('z2vol').value=mes[1];
+};
+
+  connection.onopen = function(){
+    connection.send('Denon '+'MV?');
+  };
+
+
+</script>
+<script type="text/javascript" src="clientSide.js" async></script>
+<link rel="stylesheet" type="text/css" href="style/style.css">
+</head>
+<body>
+<div class="content">
+<output type=text id="result" value="" readonly> </output>
+
+<Br>
+Source
+<hr>
+<button id="BluRay" onclick="sourceToDenon('SIBD');" >
+ BluRay
+  </button>
+  <button id="TV"
+       onclick="sourceToDenon('SITV');" >
+   TV
+    </button>
+
+    <button id="DVD"
+     onclick="sourceToDenon('SIDVD');" >
+     DVD
+   </button>
+   <button id="Tuner"
+    onclick="sourceToDenon('TUNER');" >
+    Tuner
+  </button>
+  <button id="SAT"
+   onclick="sourceToDenon('SISAT');" >
+   SAT/Cable
+ </button>
+ <br>
+ <button id="game"
+  onclick="sourceToDenon('SIGAME');" >
+  Game
+</button>
+<button id="AUX"
+ onclick="sourceToDenon('SIAUX1');" >
+ Aux1
+</button>
+<button id="Pandora"
+ onclick="sourceToDenon('SIPANDORA');" >
+ Pandora
+</button>
+<button id="SPOTIFY"
+ onclick="sourceToDenon('SISPOTIFY');" >
+ Spotify
+</button>
+<button id="Sirius"
+ onclick="sourceToDenon('SISIRIUSXM');" >
+ Sirius XM
+</button>
+ <button id="media"
+  onclick="sourceToDenon('SISMPLAY');" >
+  Media
+</button>
+<br>
+<hr>
+<div>
+  <!-- All volume buttons contain javascript that allows them to be held down -->
+  Master Volume
+  <br>
+ <button id="volD" onmousedown="volButton('-');inter=setInterval(function() {volButton('-');}, 1000);"
+           onmouseup="clearInterval(inter);" onmouseout="clearInterval(inter);"
+           onmousedown="vol'-';">
+				Vol -
+ </button>
+
+ <button id="volU" onmousedown="volButton('+');inter=setInterval(function() {volButton('+');}, 1000);"
+          onmouseup="clearInterval(inter);" onmouseout="clearInterval(inter);">
+				Vol +
+ </button>
+ <button id="mute"
+         onclick="sendCommand('MU?')" >
+         Mute
+ </button>
+ <br>
+        <input id="vol" type="range" onchange="volume()"  orient="horizontal"
+        value="10" max="80" min="0"></input>
+        <output id="sliderVal"> </output>
+        <br>
+ <br>
+ Zone 2 Voume
+ <br>
+ <button id="z2volD" onmousedown="z2volButton('-');zinter=setInterval(function() {z2volButton('-');}, 1000);"
+           onmouseup="clearInterval(zinter);" onmouseout="clearInterval(zinter);"
+           onmousedown="z2vol'-';">
+				Z2 -
+   </button>
+
+ <button id="z2volU" onmousedown="z2volButton('+');zinter=setInterval(function() {z2volButton('+');}, 1000);"
+          onmouseup="clearInterval(zinter);" onmouseout="clearInterval(zinter);">
+				Z2 +
+ </button><br>
+        <input id="z2vol" type="range" onchange="z2volume()"  orient="horizontal"
+        value="10" max="80" min="0">
+<br>
+ <br>
+
+</div>
+
+</input>
+        <output id="sliderVal"></output>
+
+<input type=text onchange="connection.send(this.value); ">
+<button id="volG"
+           onclick="directToDenon('MV?');" >
+       Vol?
+</button>
+<br>
+<button id="Power"
+          onclick="directToDenon('PW?');" >
+      Power
+</button>
+<button id="dClose"
+        onclick="directToDenon('Closer')">
+        dClose
+</button>
+ <br>
+ <br>
+
+</div>
+<script>
+
+</script>
+</body>
+</html>
